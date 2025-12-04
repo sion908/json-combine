@@ -1,0 +1,36 @@
+{
+  "name": "@sion908/json-combine",
+  "version": "1.0.0",
+  "description": "combine each json file from cli",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sion908/json-combine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sion908/json-combine/issues"
+  },
+  "keywords": [
+    "yaml",
+    "env",
+    "staging"
+  ],
+  "author": "sion908 <sionn908@gmail.com> (https://sion908.github.io/sion908/)",
+  "homepage": "https://sion908.github.io/sion908/",
+  "license": "MIT",
+  "bin": {
+    "json-combine": "index"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "fs-extra": "^11.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.53.0",
+    "jest": "^29.7.0"
+  }
+}

@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+'use strict'
+
+const fs = require('fs');
+const yaml = require('js-yaml');
+
+const program = require('commander');
+
+program
+  .version(JSON.parse(require('fs').readFileSync(
+    require.main.filename.match(/^(.+)\/.+$/)[1] + '/package.json')).version)
+    .option('-f --format',
+            'need format?')
+    .requiredOption('-o --output-file [fileName]',
+            'output file')
+    .requiredOption('-i --input-files [fileNames...]',
+            'input file list')
+    .parse();
+
+function main(program) {
+  const options = program.opts();
+  // console.log(!options["files"] , options["files"].length>1,!(options["files"] && options["files"].length>1))
+  if (!(options.inputFiles && options.inputFiles.length>1)) {
+    console.log("引数を指定してください")
+    program.help()
+    return
+  }
+
+  const outputFile = options.outputFile;
+  const inputFiles = options.inputFiles;
+
+  const jsons = [];
+  for (const inputFile of inputFiles) {
+    jsons.push(JSON.parse(fs.readFileSync(inputFile, 'utf8')));
+  }
+
+  function mergeDeeply(target, source, opts) {
+    const isObject = obj => obj && typeof obj === 'object' && !Array.isArray(obj);
+    const isConcatArray = opts && opts.concatArray;
+    let result = Object.assign({}, target);
+    if (isObject(target) && isObject(source)) {
+        for (const [sourceKey, sourceValue] of Object.entries(source)) {
+            const targetValue = target[sourceKey];
+            if (isConcatArray && Array.isArray(sourceValue) && Array.isArray(targetValue)) {
+                result[sourceKey] = targetValue.concat(...sourceValue).sort();
+            }
+            else if (isObject(sourceValue) && target.hasOwnProperty(sourceKey)) {
+                result[sourceKey] = mergeDeeply(targetValue, sourceValue, opts);
+            }
+            else {
+                Object.assign(result, {[sourceKey]: sourceValue});
+            }
+        }
+    }
+    return result;
+  }
+
+  let result = jsons[0];
+  jsons.shift();
+
+  for (let i=0; i<jsons.length; i++) {
+    result = mergeDeeply(result, jsons[i], {concatArray: true})
+  }
+
+  if (options.format) {
+    fs.writeFileSync(outputFile, JSON.stringify(result, null, 2), 'utf8');
+  } else {
+    fs.writeFileSync(outputFile, JSON.stringify(result), 'utf8');
+  }
+    
+  //   console.log('.env ファイルが生成されました:');
+  //   console.log(envData.join('\n'));
+}
+
+main(program);
